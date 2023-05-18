@@ -1,0 +1,26 @@
+fileFormatVersion: 2
+guid: 3b062dacbf8fc8b4781310897b2e94ad
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Anomalia ML v2 AAA
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: b281b315ab9d1884a95e3f972b5a1b81, type: 3}
+  - {fileID: 12800000, guid: 506aee2dee1a9e44ba0dcf3589599c7c, type: 3}
+  - {fileID: 12800000, guid: 50d798f50a557f94fbbdf2e3e7f964da, type: 3}
+  - {fileID: 12800000, guid: e461a77818040ba47af933f94596739f, type: 3}
+  - {fileID: 12800000, guid: b32d64f600e93be4aaa1b1c5d1618f2d, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

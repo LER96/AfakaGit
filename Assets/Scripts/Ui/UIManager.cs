@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class UIManager : MonoBehaviour
 {
@@ -28,9 +29,9 @@ public class UIManager : MonoBehaviour
     {
         Resolution();
         SetResolution(2);
-        _highQualityButton.Select();
-        _fullScreenButton.Select();
         _isScenePaused = false;
+        var last = _resolutions.LastOrDefault();
+        Screen.SetResolution(_resolutions[_resolutions.Count() -1].width, _resolutions[_resolutions.Count() - 1].height, Screen.fullScreen);
     }
 
     private void Update()
@@ -105,11 +106,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ReturnToMainMenu()
-    {
-        SceneManager.LoadScene(0);
-    }
-
     public void PauseMenu()
     {
         if (!_optionsCanvas.activeSelf)
@@ -152,5 +148,12 @@ public class UIManager : MonoBehaviour
     public void Restart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
+        Time.timeScale = 1;
+        _isScenePaused = false;
     }
 }

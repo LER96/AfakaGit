@@ -5,6 +5,7 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] GameObject _enemy;
+    GameObject _player;
     [SerializeField] float _enemyCount;
     [SerializeField] float _enemySpawnTime = 2f;
     [SerializeField] float _xPos;
@@ -17,7 +18,7 @@ public class EnemySpawner : MonoBehaviour
             _xPos = Random.Range(-10, 15);
             _zPos = Random.Range(35, 49);
             yield return new WaitForSeconds(time);
-            Instantiate(enemy, new Vector3(_xPos,9, _zPos),Quaternion.identity);
+            Instantiate(enemy, new Vector3(_xPos+this.transform.position.x, _player.transform.position.y, _zPos + this.transform.position.z), Quaternion.identity) ;
             _enemyCount++;
         }
     }
@@ -26,6 +27,7 @@ public class EnemySpawner : MonoBehaviour
     {
         if (other.transform.tag == "Player")
         {
+            _player = other.gameObject;
             StartCoroutine(SpawnEnemy(_enemySpawnTime, _enemy));
         }
     }

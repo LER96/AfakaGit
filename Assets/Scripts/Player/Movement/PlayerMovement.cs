@@ -25,11 +25,13 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash Settings")]
     public float dashMultiplier;
     public float dashTime;
+    [SerializeField] float _IFrameCoolDown;
     [SerializeField] bool dashing;
     [SerializeField] GameObject dashTrail;
 
     [Header("Attack")]
     public bool attack;
+    public Animator animator;
 
     //Movement Variable
     private Vector3 direction;
@@ -40,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
 
     private float horizontal, vertical;
     private float _regularSpeed;
-    private Animator animator;
+    //public Animator animator;
 
     // Start is called before the first frame update
     void Start()
@@ -51,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
         _comboControler = GetComponent<Fight>();
         _startSpeed = speed;
     }
+
     // Update is called once per frame
     void Update()
     {
@@ -61,6 +64,7 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool("Dash", dashing);
         }
     }
+
     public void InputPlayer()
     {
         horizontal = Input.GetAxisRaw("Horizontal");
@@ -73,6 +77,7 @@ public class PlayerMovement : MonoBehaviour
         else
             animator.SetFloat("Speed", 0);
     }
+
     public void SetSpeed(float addSpeed)
     {
         speed += addSpeed;
@@ -81,6 +86,7 @@ public class PlayerMovement : MonoBehaviour
             speed = _startSpeed;
         }
     }
+
     private void CheckGround()
     {
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDist, groundMask);
@@ -89,6 +95,7 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -2f;
         }
     }
+
     public void Move()
     {
         direction = new Vector3(horizontal, 0, vertical).normalized;
@@ -107,22 +114,36 @@ public class PlayerMovement : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
+
     public void Dash()
     {
         StartCoroutine(ActivateDash());
     }
+
     IEnumerator ActivateDash()
     {
         float startTime = Time.time;
         while (Time.time < startTime + dashTime)
         {
+            controller.detectCollisions = false;
             dashing = true;
             dashTrail.SetActive(true);
             controller.Move(moveDirection.normalized * (speed* dashMultiplier) * Time.deltaTime);
-            //animator.SetTrigger("Dashing");
+            //animator.SetBool("Dash",dashing);
             yield return null;
         }
+        StartCoroutine(ExtraTimeEvade());
         dashing = false;
         dashTrail.SetActive(false);
+    }
+
+    IEnumerator ExtraTimeEvade()
+    {
+        float t = Time.time;
+        while(Time.time<t+_IFrameCoolDown)
+        {
+            yield return null;
+        }
+        controller.detectCollisions = true;
     }
 }

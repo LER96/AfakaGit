@@ -5,85 +5,88 @@ using UnityEngine;
 public class Fight : MonoBehaviour
 {
     [SerializeField] Animator animator;
-    [SerializeField] Collider _collider;
+    [SerializeField] Collider _swordCollider;
     [SerializeField] GameObject _particleVFX_Sword;
-    [SerializeField] public bool canMove;
-    [SerializeField] bool attacking;
-    [SerializeField] float delay;
-    float currentDelay;
 
-    [Header("Heavy Attack")]
+    [Header("Movment")]
+    [SerializeField] public bool canMove;
+
+    [Header("Attacks")]
+    [SerializeField] bool baseAttacking;
+    [SerializeField] bool heavyAttacking;
+    [SerializeField] int baseAttackState;
     [SerializeField] PlayerBehavior player;
-    [SerializeField] float currentCharge;
-    [SerializeField] float chargeMultiplier=5;
-    [SerializeField] bool isReleased;
-    PlayerBehavior _playerStates;
+    int _baseAttack;
+
+
     private void Awake()
     {
-        _playerStates = player.GetComponent<PlayerBehavior>();
-        _collider.enabled = false;
-        isReleased = true;
+        _swordCollider.enabled = false;
+        canMove = true;
+        animator = GetComponent<Animator>();
+        player = GetComponent<PlayerBehavior>();
     }
     private void Update()
     {
-        animator.SetFloat("Charge", currentCharge);
-        animator.SetBool("BaseAttack", attacking);
-        animator.SetBool("Release", isReleased);
-        HeavyAttack();
-        BaseAttack();
+        if (baseAttacking == false)
+        {
+            animator.SetBool("HeavyAttack", heavyAttacking);
+        }
+        animator.SetInteger("BaseAttack", _baseAttack);
+
     }
+
+    //Base Attack
     public void BaseAttackAnimation()
     {
-        currentDelay = delay;
-        attacking = true;
-        canMove = false;
-    }
-    void BaseAttack()
-    {
-        if (currentDelay > 0)
+        if (baseAttacking == false)
         {
-            currentDelay -= Time.deltaTime;
-            _playerStates.Damage = _playerStates.lightAttackDamage;
-            player.Damage = _playerStates.Damage;
-        }
-        else if(isReleased)
-        {
-            currentDelay = 0;
-            attacking = false;
-            _particleVFX_Sword.SetActive(false);
-            canMove = true;
-        }
-    }
-    void HeavyAttack()
-    {
-        if (Input.GetKey(KeyCode.Mouse1))
-        {
-            isReleased = false;
+            player.Damage = player.lightAttackDamage;
+            baseAttackState++;
+            if (baseAttackState > 2)
+            {
+                baseAttackState = 1;
+            }
+            _baseAttack = baseAttackState;
+            baseAttacking = true;
             canMove = false;
-            if (currentCharge >= 1 && _playerStates.Damage>=_playerStates.heavyAttackDamage)
-            {
-                currentCharge = 1;
-                _playerStates.Damage = _playerStates.heavyAttackDamage;
-            }
-            else
-            {
-                currentCharge += Time.deltaTime * chargeMultiplier;
-                _playerStates.Damage = currentCharge * _playerStates.heavyAttackDamage;
-            }
-        }
-        else if (Input.GetKeyUp(KeyCode.Mouse1))
-        {
-            currentCharge = 0;
-            isReleased = true;
-            player.Damage = _playerStates.Damage;
         }
     }
+
+
+    //Heavy Attack
+    public void HeavyAttackAnimation()
+    {
+        if (baseAttacking == false)
+        {
+            player.Damage = player.heavyAttackDamage;
+            heavyAttacking = true;
+            canMove = false;
+        }
+    }
+
+    //Ivoke Fuctions
     public void EnableCollider()
     {
-        _collider.enabled = true;
+        _swordCollider.enabled = true;
     }
+
     public void DisableCollider()
     {
-        _collider.enabled = false;
+        _swordCollider.enabled = false;
+        _particleVFX_Sword.SetActive(false);
+    }
+
+    public void BaseAttackAgain()
+    {
+        _baseAttack = 0;
+        baseAttacking = false;
+        canMove = true;
+    }
+
+    public void HeavyAttackAgain()
+    {
+        heavyAttacking = false;
+        canMove = true;
     }
 }

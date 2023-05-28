@@ -11,7 +11,7 @@ public class AttackManager : MonoBehaviour
     {
         PlayerBehavior playerBehave = GetComponentInParent<PlayerBehavior>();
 
-        if (other.transform.tag == "Enemy")
+        if (other.transform.tag == "RangedEnemy" || other.transform.tag == "MeleeEnemy")
         {
             Debug.Log("hit");
             isEnemyHit = true;

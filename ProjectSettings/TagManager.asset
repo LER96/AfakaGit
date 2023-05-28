@@ -9,6 +9,9 @@ TagManager:
   - Checkpoint
   - Sword
   - Breakable
+  - RangedEnemy
+  - MeleeEnemy
+  - ShootPoint
   layers:
   - Default
   - TransparentFX

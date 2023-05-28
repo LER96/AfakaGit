@@ -6,7 +6,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     Enemy _enemy;
-    float speed = 3f;
+    [SerializeField]float speed = 50f;
     float projLifeSpan = 5f;
 
     private void OnTriggerEnter(Collider coll)

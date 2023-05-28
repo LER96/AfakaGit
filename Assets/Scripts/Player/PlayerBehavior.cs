@@ -41,7 +41,7 @@ public class PlayerBehavior : Character
     [SerializeField] float ultimateBuff;
 
     [Header("Momentum CoolDown")]
-    [SerializeField] bool _coolDownMomentum;
+    [HideInInspector] public bool _coolDownMomentum;
     [SerializeField] float _coolDownMomentumTime;
     [SerializeField] float _currentCoolDownTime;
     [SerializeField] float decreaseMomentum;
@@ -54,6 +54,7 @@ public class PlayerBehavior : Character
     [SerializeField] CharacterController _characterController;
     [SerializeField] Enemy _enemyHealthBar;
 
+    Animator _animator;
     PlayerMovement _playerMovement;
     public LayerMask enemyMask;
 
@@ -78,15 +79,16 @@ public class PlayerBehavior : Character
         _momentumState = MomentumState.None;
         momentumCopy = _momentumState;
         _playerMovement = GetComponent<PlayerMovement>();
+        _animator = GetComponent<Animator>();
+        MomentumVFXChange(new Color(207f / 255f, 101f / 255f, 36f / 255f), 0.06f, 0.7f);
     }
 
     private void Update()
     {
         HealthBarFill();
+
         if (_coolDownMomentum)
-        {
             CoolDownMomentum();
-        }
         else
         {
             if (momentumPoints > 0)
@@ -108,7 +110,19 @@ public class PlayerBehavior : Character
 
     public override void TakeDamage(Character enemy)
     {
-        base.TakeDamage(enemy);
+        HP -= enemy.Damage;
+
+        if (HP < 0)
+        {
+            HP = 0;
+            _animator.SetBool("Dead", true);
+            //DeathState(true);
+        }
+    }
+
+    public void Dead()
+    {
+        DeathState(true);
     }
 
     public override void DeathState(bool dead)
@@ -129,9 +143,7 @@ public class PlayerBehavior : Character
     public void OnMomemntumChange(float moment)
     {
         if (this.momentumPoints < _maxMomentumPoints)
-        {
             this.momentumPoints += moment;
-        }
         else
             this.momentumPoints = _maxMomentumPoints;
 
@@ -204,7 +216,6 @@ public class PlayerBehavior : Character
                 momentumCopy = _momentumState;
                 MomentumBuff(secondBuffMultiplier);
                 _fullMomentumBar.SetActive(false);
-                MomentumVFXChange(Color.green, 0.1f, 0.9f);
                 break;
             case MomentumState.lastBuff:
                 momentumCopy = _momentumState;
@@ -216,7 +227,7 @@ public class PlayerBehavior : Character
                 momentumCopy = _momentumState;
                 MomentumBuff(0);
                 _fullMomentumBar.SetActive(false);
-                MomentumVFXChange(new Color(39f / 255f, 190f / 255f, 184f / 255f), 0.05f, 0.5f);
+                MomentumVFXChange(new Color(207f / 255f, 101f / 255f, 36f / 255f), 0.06f, 0.7f);
                 break;
         }
     }
@@ -289,15 +300,5 @@ public class PlayerBehavior : Character
                 break;
 
         }
-    }
-
-    public void EnablePlayerCollider()
-    {
-        _characterController.detectCollisions = true;
-    }
-
-    public void DisablePlayerCollider()
-    {
-        _characterController.detectCollisions = false;
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class ItemDestruction : MonoBehaviour
 {
     [SerializeField] DestructableItems destructableItem;
+    [SerializeField] Item _itemDrop;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -18,6 +19,7 @@ public class ItemDestruction : MonoBehaviour
     {
         GameObject go = Instantiate(destructableItem._destroyedVersion, transform.position, transform.rotation);
         Destroy(this.gameObject);
+        ItemDrop();
         foreach (Transform child in go.transform)
         {
             GameObject kid = child.gameObject;
@@ -39,5 +41,11 @@ public class ItemDestruction : MonoBehaviour
             mat.color = Color.Lerp(startColor, endColor, time / duration);
             yield return null;
         }
+    }
+
+    void ItemDrop()
+    {
+        if (Random.Range(0, 100) <= _itemDrop.dropChance)
+            Instantiate(_itemDrop.prefab, transform.position, transform.rotation);
     }
 }

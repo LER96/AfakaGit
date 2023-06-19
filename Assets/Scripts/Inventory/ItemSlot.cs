@@ -14,20 +14,15 @@ public class ItemSlot : MonoBehaviour
 
     [Header("Slot Variables")]
     [SerializeField] private Sprite _fullFrame;
-   // [SerializeField] private Sprite _emptyFrame;
-   // [SerializeField] private Sprite _emptyIcon;
     [SerializeField] private Image _slotFrame;
 
     public void SetItem(InventoryItem item)
     {
         _slotFrame = GetComponentInParent<Image>();
 
-       
-
         _slotFrame.sprite = _fullFrame;
         _itemIcon.sprite = item.data.icon;
-
         _itemName.text = item.data.name;
-        _stackText.text = item.stackSize.ToString();
+        _stackText.text = ($"{item.stackSize} / {item.data.maxAmount}");
     }
 }

@@ -240,6 +240,7 @@ MonoBehaviour:
   momentumPoints: 2
   IsDead: 0
   IsAttacking: 0
+  _itemDrop: {fileID: 11400000, guid: c37fa9901513258468c7998975bb4dd5, type: 2}
   meshRenderer: {fileID: 0}
   visualEffect: {fileID: 540071621203553881}
   _material:

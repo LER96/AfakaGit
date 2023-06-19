@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class AttackManager : MonoBehaviour
 {
-    public bool isEnemyHit = false;
     [SerializeField] float _knockStrength;
+    List<Enemy> cachedEnemies = new List<Enemy>();
 
     private void OnTriggerEnter(Collider other)
     {
@@ -13,19 +13,27 @@ public class AttackManager : MonoBehaviour
 
         if (other.transform.tag == "RangedEnemy" || other.transform.tag == "MeleeEnemy")
         {
-            Debug.Log("hit");
-            isEnemyHit = true;
             Enemy enemyCharacter = other.transform.GetComponent<Enemy>();
-            playerBehave.ApplyDamage(enemyCharacter);
-            enemyCharacter.ColorFlash();
-            enemyCharacter.PlaySplashBlood();
-            KnockBack(enemyCharacter.transform);
+
+            if (!cachedEnemies.Contains(enemyCharacter))
+            {
+                cachedEnemies.Add(enemyCharacter);
+                playerBehave.ApplyDamage(enemyCharacter);
+                enemyCharacter.ColorFlash();
+                enemyCharacter.PlaySplashBlood();
+                KnockBack(enemyCharacter.transform);
+            }
         }
+    }
+
+    public void ClearCachedEnemies()
+    {
+        cachedEnemies.Clear();
     }
 
     public void KnockBack(Transform enemy)
     {
         Vector3 hitDirrection = this.transform.position - enemy.transform.position;
-        enemy.transform.position -= hitDirrection.normalized*_knockStrength*10f*Time.deltaTime;
+        enemy.transform.position -= hitDirrection.normalized * _knockStrength * 10f * Time.deltaTime;
     }
 }

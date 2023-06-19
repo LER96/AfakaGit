@@ -12,6 +12,7 @@ TagManager:
   - RangedEnemy
   - MeleeEnemy
   - ShootPoint
+  - Ultimate
   layers:
   - Default
   - TransparentFX
@@ -24,7 +25,7 @@ TagManager:
   - Environment
   - Land
   - Minimap
-  - 
+  - VFX
   - 
   - 
   - 

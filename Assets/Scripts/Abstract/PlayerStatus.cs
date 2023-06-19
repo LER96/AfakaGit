@@ -3,28 +3,26 @@ using System.Collections.Generic;
 
 public class PlayerStatus 
 {
-    public float HP;
-    public float maxHp;
-    public float lightAttackDamage;
-    public float heavyAttackDamage;
+    public float _movementSpeed;
+    public float _dashCD;
+    public float _heavyAttackCD;
 
-    public PlayerStatus(float hp, float max, float light, float heavy)
+    public PlayerStatus(float movementSpeed, float dashCD, float heavyAttackCD)
     {
-        HP = hp;
-        maxHp = max;
-        lightAttackDamage = light;
-        heavyAttackDamage = heavy;
+        _movementSpeed = movementSpeed;
+        _dashCD = dashCD;
+        _heavyAttackCD = heavyAttackCD;
     }
+
     public PlayerStatus()
     {
 
     }
 
-    public void SetPlayerStatus(PlayerStatus p, float hpAdd, float damageAdd, float multi)
+    public void SetPlayerStatus(PlayerStatus p, float speedAdd, float dashCdReduce, float heavyCdReduce, float multi)
     {
-        HP = p.HP + hpAdd * multi;
-        maxHp = p.maxHp + hpAdd * multi;
-        lightAttackDamage = p.lightAttackDamage + damageAdd * multi;
-        heavyAttackDamage = p.heavyAttackDamage + damageAdd * multi;
+        _movementSpeed = p._movementSpeed + speedAdd * multi;
+        _dashCD = p._dashCD - dashCdReduce * multi;
+        _heavyAttackCD = p._heavyAttackCD - heavyCdReduce * multi;
     }
 }

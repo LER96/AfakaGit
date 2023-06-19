@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager instance;
-    private Dictionary<Item, InventoryItem> _itemDictionary;
+    public Dictionary<Item, InventoryItem> _itemDictionary { get; private set; }
     public List<InventoryItem> inventory = new List<InventoryItem>();
     public Action onInventoryChanged;
 
@@ -31,7 +31,10 @@ public class InventoryManager : MonoBehaviour
     {
         if (_itemDictionary.TryGetValue(item, out InventoryItem value))
         {
-            value.AddToStack();
+            if (value.stackSize >= value.data.maxAmount)
+                return;
+            else
+                value.AddToStack();
         }
         else
         {
@@ -39,7 +42,7 @@ public class InventoryManager : MonoBehaviour
             inventory.Add(newItem);
             _itemDictionary.Add(item, newItem);
         }
-
+        
         onInventoryChanged();
     }
 

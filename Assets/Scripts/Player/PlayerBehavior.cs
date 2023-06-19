@@ -26,11 +26,13 @@ public class PlayerBehavior : Character
     [Range(0, 6)]
     [SerializeField] float secondBuffMultiplier;
     [Range(0, 6)]
+    [SerializeField] float thirdMultiplayer;
+    [Range(0, 6)]
     [SerializeField] float ultimateBuffMultiplier;
 
-    [SerializeField] float _damageIncrease = 10;
-    [SerializeField] float _healthIncrease = 20;
-    [SerializeField] float _movementSpeedIncrease = 2;
+    [SerializeField] float _speedIncrease = 2;
+    [SerializeField] float _dashCdReduce = 0.5f;
+    [SerializeField] float _heavyCdReduce = 0.5f;
 
     [Header("Buff Progress")]
     [Range(0, 1)]
@@ -38,10 +40,12 @@ public class PlayerBehavior : Character
     [Range(0, 1)]
     [SerializeField] float secondBuff;
     [Range(0, 1)]
+    [SerializeField] float thirdBuff;
+    [Range(0, 1)]
     [SerializeField] float ultimateBuff;
 
     [Header("Momentum CoolDown")]
-    [HideInInspector] public bool _coolDownMomentum;
+    private bool _coolDownMomentum;
     [SerializeField] float _coolDownMomentumTime;
     [SerializeField] float _currentCoolDownTime;
     [SerializeField] float decreaseMomentum;
@@ -53,6 +57,8 @@ public class PlayerBehavior : Character
     [SerializeField] ParticleSystem _swordVFX;
     [SerializeField] CharacterController _characterController;
     [SerializeField] Enemy _enemyHealthBar;
+    [SerializeField] AttackManager _attackManager;
+    [SerializeField] Fight _fight;
 
     Animator _animator;
     PlayerMovement _playerMovement;
@@ -69,17 +75,19 @@ public class PlayerBehavior : Character
         None,
         firstBuff,
         secondBuff,
+        thirdBuff,
         lastBuff,
     }
 
     private void Start()
     {
-        SetBase();
         this.maxHP = HP;
         _momentumState = MomentumState.None;
         momentumCopy = _momentumState;
         _playerMovement = GetComponent<PlayerMovement>();
+        _fight = GetComponent<Fight>();
         _animator = GetComponent<Animator>();
+        SetBase();
         MomentumVFXChange(new Color(207f / 255f, 101f / 255f, 36f / 255f), 0.06f, 0.7f);
     }
 
@@ -87,24 +95,23 @@ public class PlayerBehavior : Character
     {
         HealthBarFill();
 
-        if (_coolDownMomentum)
-            CoolDownMomentum();
-        else
-        {
-            if (momentumPoints > 0)
-            {
-                momentumPoints -= decreaseMomentum * Time.deltaTime;
-                GetCurrentMomentumFill();
-            }
-            else
-                momentumPoints = 0;
-        }
+        //if (_coolDownMomentum)
+        //    CoolDownMomentum();
+        //else
+        //{
+        //    if (momentumPoints > 0)
+        //    {
+        //        momentumPoints -= decreaseMomentum * Time.deltaTime;
+        //        GetCurrentMomentumFill();
+        //    }
+        //    else
+        //        momentumPoints = 0;
+        //}
     }
 
     public override void ApplyDamage(Character enemy)
     {
         base.ApplyDamage(enemy);
-        Debug.Log($"{enemy.HP} + {enemy.maxHp}");
         OnMomemntumChange(enemy.momentumPoints);
     }
 
@@ -151,18 +158,18 @@ public class PlayerBehavior : Character
         GetCurrentMomentumFill();
     }
 
-    void CoolDownMomentum()
-    {
-        if (_currentCoolDownTime >= _coolDownMomentumTime)
-        {
-            _currentCoolDownTime = 0;
-            _coolDownMomentum = false;
-        }
-        else
-        {
-            _currentCoolDownTime += Time.deltaTime;
-        }
-    }
+    //void CoolDownMomentum()
+    //{
+    //    if (_currentCoolDownTime >= _coolDownMomentumTime)
+    //    {
+    //        _currentCoolDownTime = 0;
+    //        _coolDownMomentum = false;
+    //    }
+    //    else
+    //    {
+    //        _currentCoolDownTime += Time.deltaTime;
+    //    }
+    //}
 
     void GetCurrentMomentumFill()
     {
@@ -183,9 +190,13 @@ public class PlayerBehavior : Character
         {
             _momentumState = MomentumState.firstBuff;
         }
-        else if (_momentumFillAmount >= secondBuff && _momentumFillAmount < ultimateBuff)
+        else if (_momentumFillAmount >= secondBuff && _momentumFillAmount < thirdBuff)
         {
             _momentumState = MomentumState.secondBuff;
+        }
+        else if (_momentumFillAmount >= thirdBuff && _momentumFillAmount < ultimateBuff)
+        {
+            _momentumState = MomentumState.thirdBuff;
         }
         else if (_momentumFillAmount >= ultimateBuff)
         {
@@ -212,17 +223,24 @@ public class PlayerBehavior : Character
                 _fullMomentumBar.SetActive(false);
                 MomentumVFXChange(new Color(207f / 255f, 101f / 255f, 36f / 255f), 0.06f, 0.7f);
                 break;
+
             case MomentumState.secondBuff:
                 momentumCopy = _momentumState;
                 MomentumBuff(secondBuffMultiplier);
-                _fullMomentumBar.SetActive(false);
                 break;
+
+            case MomentumState.thirdBuff:
+                momentumCopy = _momentumState;
+                MomentumBuff(thirdMultiplayer);
+                break;
+
             case MomentumState.lastBuff:
                 momentumCopy = _momentumState;
                 MomentumBuff(ultimateBuffMultiplier);
                 _fullMomentumBar.SetActive(true);
                 MomentumVFXChange(Color.cyan, 0.5f, 1.1f);
                 break;
+
             case MomentumState.None:
                 momentumCopy = _momentumState;
                 MomentumBuff(0);
@@ -234,16 +252,17 @@ public class PlayerBehavior : Character
 
     public void MomentumBuff(float multi)
     {
-        _playerBuffState.SetPlayerStatus(_playerOriginal, _healthIncrease, _damageIncrease, multi);
-        this.lightAttackDamage = _playerBuffState.lightAttackDamage;
-        this.heavyAttackDamage = _playerBuffState.heavyAttackDamage;
-        this.HP = (this.HP * _playerBuffState.maxHp) / this.maxHP;
-        this.maxHP = _playerBuffState.maxHp;
+        _playerBuffState.SetPlayerStatus(_playerOriginal, _speedIncrease, _dashCdReduce, _heavyCdReduce, multi);
+        _playerMovement.speed = _playerBuffState._movementSpeed;
+        _playerMovement.dashCD = _playerBuffState._dashCD;
+        _playerMovement.dashCdTimer = _playerBuffState._dashCD;
+        _fight._heavyAttackCD = _playerBuffState._heavyAttackCD;
+        _fight._heavyAttackCDTimer = _playerBuffState._heavyAttackCD;
     }
 
     public void HealthPotion()
     {
-        if (InventoryManager.instance.inventory.Count > 0 && this.HP != maxHP)
+        if (InventoryManager.instance.inventory.Count > 0 && this.HP <= maxHP)
         {
             InventoryItem item = InventoryManager.instance.inventory[0];
             this.HP += item.data.value;
@@ -267,38 +286,18 @@ public class PlayerBehavior : Character
 
     void SetBase()
     {
-        _playerOriginal = new PlayerStatus(this.HP, this.maxHP, this.lightAttackDamage, this.heavyAttackDamage);
+        _playerOriginal = new PlayerStatus(_playerMovement.speed, _playerMovement.dashCD, _fight._heavyAttackCD);
     }
 
     public void GetBase()
     {
-        this.lightAttackDamage = _playerOriginal.lightAttackDamage;
-        this.heavyAttackDamage = _playerOriginal.heavyAttackDamage;
-        this.maxHP = _playerOriginal.maxHp;
-        this.HP = _playerOriginal.HP;
+        _playerMovement.speed = _playerOriginal._movementSpeed;
+        _playerMovement.dashCD = _playerOriginal._dashCD;
+        _fight._heavyAttackCD = _playerOriginal._heavyAttackCD;
     }
 
-    public void ManuallyChangeMomentum(int num)
+    public void ClearCachedEnemies()
     {
-        switch (num)
-        {
-            case 0:
-                momentumPoints = 0;
-                GetCurrentMomentumFill();
-                break;
-            case 1:
-                momentumPoints = firstBuff * 100;
-                GetCurrentMomentumFill();
-                break;
-            case 2:
-                momentumPoints = secondBuff * 100;
-                GetCurrentMomentumFill();
-                break;
-            case 3:
-                momentumPoints = ultimateBuff * 100;
-                GetCurrentMomentumFill();
-                break;
-
-        }
+        _attackManager.ClearCachedEnemies();
     }
 }

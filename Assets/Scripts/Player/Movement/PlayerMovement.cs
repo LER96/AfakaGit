@@ -4,7 +4,14 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+
     public Transform cam;
+
+    [Header("Enemies Look At")]
+    [SerializeField] public List<Transform> enemies;
+    [SerializeField] public int pickAnEnemy;
+    [SerializeField] public float radiusOffset = 2;
+    [SerializeField] LayerMask _enemyMask;
 
     [Header("Ground Check & Gravity")]
     public LayerMask groundMask;
@@ -25,6 +32,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash Settings")]
     public float dashMultiplier;
     public float dashTime;
+    public float dashCD = 2f;
+    public float dashCdTimer = 2f;
     [SerializeField] float _IFrameCoolDown;
     [SerializeField] bool dashing;
     [SerializeField] GameObject dashTrail;
@@ -52,6 +61,7 @@ public class PlayerMovement : MonoBehaviour
         dashTrail.SetActive(false);
         _comboControler = GetComponent<Fight>();
         _startSpeed = speed;
+        dashCdTimer = dashCD;
     }
 
     // Update is called once per frame
@@ -63,6 +73,14 @@ public class PlayerMovement : MonoBehaviour
             Move();
             animator.SetBool("Dash", dashing);
         }
+        //Liron 4/6/2023
+        if (_comboControler.baseAttacking)
+        {
+            LookAtMouse();
+        }
+        // CheckGround();
+        PickEnemy();
+
     }
 
     public void InputPlayer()
@@ -81,10 +99,65 @@ public class PlayerMovement : MonoBehaviour
     public void SetSpeed(float addSpeed)
     {
         speed += addSpeed;
-        if(speed<=_startSpeed)
+        if (speed <= _startSpeed)
         {
             speed = _startSpeed;
         }
+    }
+
+    //unused
+    void PickEnemy()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse2))
+        {
+            if (pickAnEnemy < enemies.Count)
+            {
+                pickAnEnemy++;
+            }
+            else
+                pickAnEnemy = 0;
+        }
+    }
+
+    public void LookAtEnemy(Transform enemyTransform)
+    {
+        Vector3 enemyDirrect = enemyTransform.position - transform.position;
+        Vector3 newDirrect = Vector3.RotateTowards(transform.forward, enemyDirrect, 20, 0f);
+        transform.rotation = Quaternion.LookRotation(newDirrect);
+    }
+
+    //Liron 4/6/2023
+    public void LookAtMouse()
+    {
+        var yPlane = new Plane(inNormal: transform.up, inPoint: transform.position);
+        var mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (!yPlane.Raycast(mouseRay, out var entered))
+        {
+            return;
+        }
+
+        Vector3 point = mouseRay.GetPoint(entered);
+
+        if (!CheckEnemyFromRaycast(point))
+        {
+            Vector3 dirrect = (point - transform.position).normalized;
+            float angle = Mathf.Atan2(dirrect.x, dirrect.z) * Mathf.Rad2Deg; //AngleBetweenTwoPoints(point, transform.position) * -1;
+
+            transform.rotation = Quaternion.Euler(new Vector3(0, angle, 0));
+        }
+    }
+
+    public bool CheckEnemyFromRaycast(Vector3 point)
+    {
+        Collider[] targetsInFieldView = Physics.OverlapSphere(point, radiusOffset, _enemyMask);
+
+        if (targetsInFieldView.Length > 0)
+        {
+            LookAtEnemy(targetsInFieldView[0].transform);
+            return true;
+        }
+        return false;
     }
 
     private void CheckGround()
@@ -117,7 +190,11 @@ public class PlayerMovement : MonoBehaviour
 
     public void Dash()
     {
-        StartCoroutine(ActivateDash());
+        if (Time.time > dashCD)
+        {
+            StartCoroutine(ActivateDash());
+            dashCD = Time.time + dashCdTimer;
+        }
     }
 
     IEnumerator ActivateDash()
@@ -128,7 +205,7 @@ public class PlayerMovement : MonoBehaviour
             controller.detectCollisions = false;
             dashing = true;
             dashTrail.SetActive(true);
-            controller.Move(moveDirection.normalized * (speed* dashMultiplier) * Time.deltaTime);
+            controller.Move(moveDirection.normalized * (speed * dashMultiplier) * Time.deltaTime);
             //animator.SetBool("Dash",dashing);
             yield return null;
         }
@@ -140,10 +217,12 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator ExtraTimeEvade()
     {
         float t = Time.time;
-        while(Time.time<t+_IFrameCoolDown)
+        while (Time.time < t + _IFrameCoolDown)
         {
             yield return null;
         }
         controller.detectCollisions = true;
     }
 }
+
+

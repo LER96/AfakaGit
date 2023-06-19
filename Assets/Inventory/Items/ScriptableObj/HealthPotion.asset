@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8301e26de092f74c976227381208e36, type: 3}
   m_Name: HealthPotion
   m_EditorClassIdentifier: 
-  id: 1
+  maxAmount: 3
   itemName: HealthPotion
   value: 20
   icon: {fileID: 21300000, guid: c7b86a412b13b884f9d559499f774ff6, type: 3}
+  prefab: {fileID: 126295068206991049, guid: 9d2243135ea30f14ea8052f04ffdadaa, type: 3}
+  dropChance: 15

@@ -8,6 +8,8 @@ using UnityEngine.Events;
 
 public class Enemy : Character
 {
+    [SerializeField] Item _itemDrop;
+    public bool _gotHit = false;
 
     [Header("Visual Effects")]
     [SerializeField] public MeshRenderer meshRenderer;
@@ -78,11 +80,10 @@ public class Enemy : Character
         CheckSight();
         InAttackRange();
         AdjustHPBar();
-   
+
         if (_playerInAttackRange)
         {
             AttackPlayer();
-            _playerBehavior._coolDownMomentum = true;
         }
     }
 
@@ -125,12 +126,12 @@ public class Enemy : Character
 
     public virtual void AttackPlayer()
     {
-       agent.SetDestination(transform.position);
-    
-       shootSpot.transform.LookAt(playerShootPoint.transform.position);
-    
-       if (!_attacked && IsDead == false)
-       {
+        agent.SetDestination(transform.position);
+
+        shootSpot.transform.LookAt(playerShootPoint.transform.position);
+
+        if (!_attacked && IsDead == false)
+        {
             switch (_enemyType)
             {
                 case EnemyType.Ranged:
@@ -152,7 +153,7 @@ public class Enemy : Character
                     }
                     break;
             }
-       }
+        }
     }
 
     public void ResetAttack()
@@ -179,5 +180,20 @@ public class Enemy : Character
     {
         base.TakeDamage(enemy);
         UpdateHealthBar();
+
+        if (this.IsDead)
+        {
+            if (Random.Range(0, 100) <= _itemDrop.dropChance)
+                Instantiate(_itemDrop.prefab, new Vector3(transform.position.x, transform.position.y + 2f, transform.position.z), transform.rotation);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Ultimate")
+        {
+            Debug.Log("hit enemy");
+            TakeDamage(15);
+        }
     }
 }
